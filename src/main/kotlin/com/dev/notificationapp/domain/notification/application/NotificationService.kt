@@ -15,6 +15,9 @@ interface NotificationService {
 
     fun getNotifications(
         userId: Long,
+        status: String?,
         pageable: Pageable
     ) : Page<NotificationHistoryResponse>
+
+    fun cancelNotification(userId: Long, id: Long)
 }

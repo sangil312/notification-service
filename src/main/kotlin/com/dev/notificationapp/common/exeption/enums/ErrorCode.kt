@@ -1,9 +1,7 @@
 package com.dev.notificationapp.common.exeption.enums
 
-import lombok.Getter
 import org.springframework.http.HttpStatus
 
-@Getter
 enum class ErrorCode(
     val httpStatus: HttpStatus,
     val message: String
@@ -14,6 +12,7 @@ enum class ErrorCode(
 
     /* 404 */
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "발송 예약을 찾을 수 없습니다."),
 
     /* 409 */
     DUPLICATE_REQUEST(HttpStatus.CONFLICT, "이미 처리된 요청입니다."),

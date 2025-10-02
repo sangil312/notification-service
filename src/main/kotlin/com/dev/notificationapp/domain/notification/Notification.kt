@@ -56,4 +56,9 @@ class Notification(
             )
         }
     }
+
+    /* 비지니스 메서드 */
+    fun cancelReservation() {
+        status = NotificationStatus.CANCELED
+    }
 }

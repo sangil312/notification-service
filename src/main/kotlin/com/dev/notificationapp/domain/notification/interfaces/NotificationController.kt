@@ -8,11 +8,7 @@ import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class NotificationController(
@@ -30,9 +26,19 @@ class NotificationController(
 
     @GetMapping("/api/notifications")
     fun getNotifications(
+        @RequestParam("status") status: String?,
         pageable: Pageable
         ) : ResponseEntity<Page<NotificationHistoryResponse>> {
         // 토큰에서 userId를 추출했다고 가정
-        return ResponseEntity.ok(notificationService.getNotifications(1L, pageable))
+        return ResponseEntity.ok(notificationService.getNotifications(1L, status, pageable))
+    }
+
+    @PatchMapping("/api/notifications/{id}/status")
+    fun cancelNotification(
+        @PathVariable("id") id: Long
+    ) : ResponseEntity<Void> {
+        // 토큰에서 userId를 추출했다고 가정
+        notificationService.cancelNotification(1L, id)
+        return ResponseEntity.ok().build()
     }
 }

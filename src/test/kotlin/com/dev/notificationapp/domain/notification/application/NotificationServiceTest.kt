@@ -54,6 +54,8 @@ class NotificationServiceTest(
         val request = ReservationServiceRequest("알림 제목", "알림 내용", reserveTime)
         userRepository.save(user)
 
+        notificationService.reserveNotification(user.id!!, idempotencyKey, request)
+
         //when //then
         assertThatThrownBy { notificationService.reserveNotification(user.id!!, idempotencyKey, request) }
             .isInstanceOf(DuplicateException::class.java)
@@ -81,21 +83,40 @@ class NotificationServiceTest(
         val user = User(null, "user1", "01012345678")
         userRepository.save(user)
 
-        val request = ReservationServiceRequest("알림 제목1", "알림 내용1", LocalDateTime.now())
+        val request = ReservationServiceRequest("알림 제목", "알림 내용", LocalDateTime.now())
         val notification = Notification.create(user, "idempotency-key1", request)
         notificationRepository.save(notification)
 
         val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
 
         //when
-        val response = notificationService.getNotifications(user.id!!, pageable)
+        val response = notificationService.getNotifications(user.id!!, "RESERVED", pageable)
 
         //then
         assertThat(response.content).hasSize(1)
         assertThat(response)
             .extracting("notificationId", "status", "retryCount", "title", "reservedTime", "acceptTime")
             .containsExactlyInAnyOrder(
-                tuple(notification.id, "RESERVED", 0, "알림 제목1", request.reserveTime.toString(), notification.createdAt.toString()),
+                tuple(notification.id, "RESERVED", 0, "알림 제목", request.reserveTime.toString(), notification.createdAt.toString()),
             )
+    }
+
+    @DisplayName("알림 발송 예약을 취소한다.")
+    @Test
+    fun cancelNotifications() {
+        //given
+        val user = User(null, "user1", "01012345678")
+        userRepository.save(user)
+
+        val request = ReservationServiceRequest("알림 제목", "알림 내용", LocalDateTime.now())
+        val notification = Notification.create(user, "idempotency-key1", request)
+        notificationRepository.save(notification)
+
+        //when
+        notificationService.cancelNotification(user.id!!, notification.id!!)
+
+        //then
+        val updatedNotification = notificationRepository.findById(notification.id!!).get()
+        assertThat(updatedNotification.status).isEqualTo(NotificationStatus.CANCELED)
     }
 }

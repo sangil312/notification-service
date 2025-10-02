@@ -9,11 +9,10 @@ import com.dev.notificationapp.domain.notification.NotificationRepository
 import com.dev.notificationapp.domain.notification.application.dto.request.ReservationServiceRequest
 import com.dev.notificationapp.domain.notification.application.dto.response.NotificationHistoryResponse
 import com.dev.notificationapp.domain.notification.application.dto.response.ReservationResponse
+import com.dev.notificationapp.domain.notification.enums.NotificationStatus
 import com.dev.notificationapp.domain.user.UserRepository
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -35,10 +34,10 @@ class NotificationServiceImpl(
             throw DuplicateException(DUPLICATE_REQUEST)
         }
 
-        notificationReserveTimeCheck(request.reserveTime)
-
         val user = userRepository.findById(userId)
             .orElseThrow { throw NotFoundException(USER_NOT_FOUND) }
+
+        notificationReserveTimeCheck(request.reserveTime)
 
         val notification = Notification.create(user, idempotencyKey, request)
         notificationRepository.save(notification)
@@ -61,11 +60,22 @@ class NotificationServiceImpl(
     @Transactional(readOnly = true)
     override fun getNotifications(
         userId: Long,
+        status: String?,
         pageable: Pageable
     ) : Page<NotificationHistoryResponse> {
-        if (userRepository.existsById(userId)) throw NotFoundException(USER_NOT_FOUND)
+        if (!userRepository.existsById(userId)) throw NotFoundException(USER_NOT_FOUND)
 
-        return notificationRepository.findAllByUserId(userId, pageable)
+        return notificationRepository.findAllByUserId(userId, NotificationStatus.of(status), pageable)
             .map { notification -> NotificationHistoryResponse.of(notification) }
+    }
+
+    @Transactional
+    override fun cancelNotification(userId: Long, id: Long) {
+        if (!userRepository.existsById(userId)) throw NotFoundException(USER_NOT_FOUND)
+
+        val notification = notificationRepository.findById(id)
+            .orElseThrow { throw NotFoundException(NOTIFICATION_NOT_FOUND) }
+
+        notification.cancelReservation()
     }
 }

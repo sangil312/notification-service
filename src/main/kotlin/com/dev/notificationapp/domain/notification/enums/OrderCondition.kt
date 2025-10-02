@@ -1,8 +1,5 @@
 package com.dev.notificationapp.domain.notification.enums
 
-import lombok.Getter
-
-@Getter
 enum class OrderCondition(
     val value: String
 ) {
