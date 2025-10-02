@@ -39,7 +39,7 @@ class NotificationServiceImpl(
 
         notificationReserveTimeCheck(request.reserveTime)
 
-        val notification = Notification.create(user, idempotencyKey, request)
+        val notification = Notification.register(user, idempotencyKey, request)
         notificationRepository.save(notification)
 
         return ReservationResponse.of(notification)
@@ -73,9 +73,17 @@ class NotificationServiceImpl(
     override fun cancelNotification(userId: Long, id: Long) {
         if (!userRepository.existsById(userId)) throw NotFoundException(USER_NOT_FOUND)
 
-        val notification = notificationRepository.findById(id)
+        val notification = notificationRepository.findWithPessimisticLockById(id)
             .orElseThrow { throw NotFoundException(NOTIFICATION_NOT_FOUND) }
 
-        notification.cancelReservation()
+        notification.checkCancelableStatus()
+
+        notification.cancelNotification()
+    }
+
+    @Transactional(readOnly = true)
+    override fun getReservedNotifications(): List<Notification> {
+        //TODO status = RESERVED or status = PENDING and now <= retryAt
+        TODO("Not yet implemented")
     }
 }

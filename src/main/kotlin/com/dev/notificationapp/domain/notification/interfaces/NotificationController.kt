@@ -36,7 +36,7 @@ class NotificationController(
     @PatchMapping("/api/notifications/{id}/status")
     fun cancelNotification(
         @PathVariable("id") id: Long
-    ) : ResponseEntity<Void> {
+    ) : ResponseEntity<Unit> {
         // 토큰에서 userId를 추출했다고 가정
         notificationService.cancelNotification(1L, id)
         return ResponseEntity.ok().build()

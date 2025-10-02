@@ -39,7 +39,10 @@ class NotificationRepositoryImpl(
         val countQuery = queryFactory
             .select(notification.count())
             .from(notification)
-            .where(notification.user.id.eq(userId))
+            .where(
+                notification.user.id.eq(userId),
+                eqStatus(status)
+            )
 
         return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
     }

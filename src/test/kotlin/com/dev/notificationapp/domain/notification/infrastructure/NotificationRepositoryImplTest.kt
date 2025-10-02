@@ -130,6 +130,6 @@ class NotificationRepositoryImplTest(
         reserveTime: LocalDateTime,
     ) : Notification {
         val request = ReservationServiceRequest(title, contents, reserveTime)
-        return Notification.create(user, idempotencyKey, request)
+        return Notification.register(user, idempotencyKey, request)
     }
 }

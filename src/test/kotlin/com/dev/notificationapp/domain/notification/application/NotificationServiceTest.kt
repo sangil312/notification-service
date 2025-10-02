@@ -7,7 +7,7 @@ import com.dev.notificationapp.domain.notification.Notification
 import com.dev.notificationapp.domain.notification.NotificationRepository
 import com.dev.notificationapp.domain.notification.application.dto.request.ReservationServiceRequest
 import com.dev.notificationapp.domain.notification.enums.NotificationStatus
-import com.dev.notificationapp.domain.notification.enums.NotificationStatus.RESERVED
+import com.dev.notificationapp.domain.notification.enums.NotificationStatus.PENDING
 import com.dev.notificationapp.domain.user.User
 import com.dev.notificationapp.domain.user.UserRepository
 import org.assertj.core.api.Assertions.*
@@ -41,7 +41,7 @@ class NotificationServiceTest(
         //then
         assertThat(response.notificationId).isNotNull()
         assertThat(response).extracting("status", "success", "reservedTime")
-            .containsExactlyInAnyOrder(RESERVED.name, true, reserveTime.toString())
+            .containsExactlyInAnyOrder(PENDING.name, true, reserveTime.toString())
     }
 
     @DisplayName("동일한 알림 발송 예약 요청 시 예외 응답을 반환한다.")
@@ -84,20 +84,20 @@ class NotificationServiceTest(
         userRepository.save(user)
 
         val request = ReservationServiceRequest("알림 제목", "알림 내용", LocalDateTime.now())
-        val notification = Notification.create(user, "idempotency-key1", request)
+        val notification = Notification.register(user, "idempotency-key1", request)
         notificationRepository.save(notification)
 
         val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
 
         //when
-        val response = notificationService.getNotifications(user.id!!, "RESERVED", pageable)
+        val response = notificationService.getNotifications(user.id!!, "PENDING", pageable)
 
         //then
         assertThat(response.content).hasSize(1)
         assertThat(response)
             .extracting("notificationId", "status", "retryCount", "title", "reservedTime", "acceptTime")
             .containsExactlyInAnyOrder(
-                tuple(notification.id, "RESERVED", 0, "알림 제목", request.reserveTime.toString(), notification.createdAt.toString()),
+                tuple(notification.id, "PENDING", 0, "알림 제목", request.reserveTime.toString(), notification.createdAt.toString()),
             )
     }
 
@@ -109,7 +109,7 @@ class NotificationServiceTest(
         userRepository.save(user)
 
         val request = ReservationServiceRequest("알림 제목", "알림 내용", LocalDateTime.now())
-        val notification = Notification.create(user, "idempotency-key1", request)
+        val notification = Notification.register(user, "idempotency-key1", request)
         notificationRepository.save(notification)
 
         //when

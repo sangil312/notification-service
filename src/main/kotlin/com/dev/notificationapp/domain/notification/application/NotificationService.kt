@@ -1,5 +1,6 @@
 package com.dev.notificationapp.domain.notification.application
 
+import com.dev.notificationapp.domain.notification.Notification
 import com.dev.notificationapp.domain.notification.application.dto.request.ReservationServiceRequest
 import com.dev.notificationapp.domain.notification.application.dto.response.NotificationHistoryResponse
 import com.dev.notificationapp.domain.notification.application.dto.response.ReservationResponse
@@ -20,4 +21,6 @@ interface NotificationService {
     ) : Page<NotificationHistoryResponse>
 
     fun cancelNotification(userId: Long, id: Long)
+
+    fun getReservedNotifications() : List<Notification>
 }
