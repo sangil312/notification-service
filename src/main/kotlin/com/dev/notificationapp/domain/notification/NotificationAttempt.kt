@@ -18,4 +18,18 @@ class NotificationAttempt(
     @Enumerated(EnumType.STRING)
     val result: NotificationAttemptResult
 ) : BaseEntity() {
+
+    companion object {
+        fun create(
+            notificationId: Long,
+            attemptNo: Int,
+            attemptResult: NotificationAttemptResult
+        ) : NotificationAttempt {
+            return NotificationAttempt(
+                notificationId = notificationId,
+                attemptNo = attemptNo,
+                result = attemptResult
+            )
+        }
+    }
 }

@@ -14,8 +14,8 @@ class WebClientConfig {
     @Bean
     fun webClient(): WebClient {
         val httpClient = HttpClient.create()
-            .responseTimeout(Duration.ofSeconds(3))
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
+            .responseTimeout(Duration.ofSeconds(5))
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
 
         return WebClient.builder()
             .clientConnector(ReactorClientHttpConnector(httpClient))

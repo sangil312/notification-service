@@ -4,16 +4,19 @@ import com.dev.notificationapp.domain.notification.Notification
 import com.dev.notificationapp.domain.notification.QNotification.notification
 import com.dev.notificationapp.domain.notification.NotificationCustomRepository
 import com.dev.notificationapp.domain.notification.enums.NotificationStatus
+import com.dev.notificationapp.domain.notification.enums.NotificationStatus.*
 import com.dev.notificationapp.domain.notification.enums.OrderCondition
 import com.dev.notificationapp.domain.notification.enums.OrderCondition.*
 import com.querydsl.core.types.Order.*
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
+import jakarta.persistence.LockModeType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 class NotificationRepositoryImpl(
@@ -41,10 +44,23 @@ class NotificationRepositoryImpl(
             .from(notification)
             .where(
                 notification.user.id.eq(userId),
-                eqStatus(status)
-            )
+                eqStatus(status))
 
         return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
+    }
+
+    override fun findAllWithPessimisticLockByReserved(
+        schedulerTime: LocalDateTime
+    ): List<Notification> {
+        return queryFactory
+            .selectFrom(notification)
+            .where(
+                notification.status.eq(RESERVED),
+                notification.retryAt.loe(schedulerTime))
+            .orderBy(notification.createdAt.asc())
+            .limit(100)
+            .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+            .fetch()
     }
 
     private fun eqStatus(status: NotificationStatus?): BooleanExpression? {

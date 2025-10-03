@@ -13,8 +13,8 @@ CREATE TABLE notification (
     user_id BIGINT NOT NULL,
     idempotency_key VARCHAR(255) NOT NULL,
     status VARCHAR(50) NOT NULL,
-    retry_count INT NOT NULL DEFAULT 0,
-    max_retry INT NOT NULL DEFAULT 2,
+    attempt_count INT NOT NULL DEFAULT 0,
+    max_attempt_count INT NOT NULL DEFAULT 3,
     phone_number VARCHAR(50) NOT NULL,
     title VARCHAR(255) NOT NULL,
     contents VARCHAR(1000) NOT NULL,
@@ -37,6 +37,5 @@ CREATE TABLE notification_attempt (
     result VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_notification_id FOREIGN KEY (notification_id) REFERENCES notification(id),
-    CONSTRAINT uk_notification_id UNIQUE (notification_id)
+    CONSTRAINT fk_notification_id FOREIGN KEY (notification_id) REFERENCES notification(id)
 );

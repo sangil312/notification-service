@@ -26,9 +26,9 @@ class Notification(
     @Enumerated(EnumType.STRING)
     var status: NotificationStatus,
 
-    var retryCount: Int,
+    var attemptCount: Int,
 
-    var maxRetry: Int,
+    var maxAttemptCount: Int,
 
     val phoneNumber: String,
 
@@ -41,6 +41,7 @@ class Notification(
     var retryAt: LocalDateTime,
 
 ) : BaseEntity() {
+
     companion object {
         fun register(
             user: User,
@@ -50,9 +51,9 @@ class Notification(
             return Notification(
                 user = user,
                 idempotencyKey = idempotencyKey,
-                status = NotificationStatus.PENDING,
-                retryCount = 0,
-                maxRetry = 2,
+                status = NotificationStatus.RESERVED,
+                attemptCount = 0,
+                maxAttemptCount = 3,
                 phoneNumber = user.phoneNumber,
                 title = request.title,
                 contents = request.contents,
@@ -62,16 +63,36 @@ class Notification(
         }
     }
 
-    /* 비지니스 메서드 */
     fun cancelNotification() {
         status = NotificationStatus.CANCELED
     }
 
     fun checkCancelableStatus() {
         when (status) {
+            NotificationStatus.PENDING -> throw NotificationCancelException(NOTIFICATION_PENDING)
             NotificationStatus.SENT -> throw NotificationCancelException(NOTIFICATION_SENT)
             NotificationStatus.CANCELED -> throw NotificationCancelException(NOTIFICATION_CANCELED)
+            NotificationStatus.FAILED -> throw NotificationCancelException(NOTIFICATION_FAILED)
             else -> return
+        }
+    }
+
+    fun changeStatus(status: NotificationStatus) {
+        this.status = status
+    }
+
+    fun increaseAttemptCount() {
+        attemptCount ++
+    }
+
+    fun handleNotificationFailure() {
+        this.increaseAttemptCount()
+
+        if (attemptCount >= maxAttemptCount) {
+            status = NotificationStatus.FAILED
+        } else {
+            retryAt = retryAt.plusSeconds(10)
+            status = NotificationStatus.RESERVED
         }
     }
 }

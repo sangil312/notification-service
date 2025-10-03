@@ -1,23 +1,33 @@
 package com.dev.notificationapp.domain.notification.application
 
+import com.dev.notificationapp.domain.notification.application.dto.request.SendNotificationRequest
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
+
+private val log = KotlinLogging.logger {}
 
 @Component
-class NotificationSendScheduler() {
+class NotificationSendScheduler(
+    private val notificationService: NotificationService,
+    private val notificationSendService: NotificationSendService
+) {
 
-    @Scheduled(fixedRate = 3_000L)
+    @Scheduled(fixedRate = 5_000L)
     fun sendNotifications() {
-        println("Sending notifications...")
+        log.info { "알림 발송 스케줄러 실행 - ${LocalDateTime.now()}" }
+        val reservedNotifications = notificationService.getReservedNotifications()
 
-        //TODO  pending, now <= retryAt
-        // 500 "errorMessage": "에러 발생"
-        // retryCount == maxRetryCount ? notification.status = FAILED
-        // retryCount <= maxRetryCount ? notification.status = PENDING
-        // notification_attempt 알림 ID, 실패, 재시도 횟수 저장
-        // ------------
-        // 200 "result": "SUCCESS"
-        // notification.status = SENT
-        // notification_attempt 알림 ID, 성공, 재시도 횟수 저장
+        for (reservedNotification in reservedNotifications) {
+            val request = SendNotificationRequest.of(reservedNotification)
+            val response = notificationSendService.externalSendNotificationApiCall(request)
+
+            if (response.result == "SUCCESS") {
+                notificationService.sendNotificationSuccess(reservedNotification.id!!)
+            } else {
+                notificationService.sendNotificationFailure(reservedNotification.id!!)
+            }
+        }
     }
 }

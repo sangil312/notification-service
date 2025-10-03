@@ -5,10 +5,13 @@ import com.dev.notificationapp.common.exeption.NotFoundException
 import com.dev.notificationapp.common.exeption.InvalidTimeException
 import com.dev.notificationapp.common.exeption.enums.ErrorCode.*
 import com.dev.notificationapp.domain.notification.Notification
+import com.dev.notificationapp.domain.notification.NotificationAttempt
+import com.dev.notificationapp.domain.notification.NotificationAttemptRepository
 import com.dev.notificationapp.domain.notification.NotificationRepository
 import com.dev.notificationapp.domain.notification.application.dto.request.ReservationServiceRequest
 import com.dev.notificationapp.domain.notification.application.dto.response.NotificationHistoryResponse
 import com.dev.notificationapp.domain.notification.application.dto.response.ReservationResponse
+import com.dev.notificationapp.domain.notification.enums.NotificationAttemptResult
 import com.dev.notificationapp.domain.notification.enums.NotificationStatus
 import com.dev.notificationapp.domain.user.UserRepository
 import org.springframework.data.domain.Page
@@ -20,6 +23,7 @@ import java.time.LocalDateTime
 @Service
 class NotificationServiceImpl(
     private val notificationRepository: NotificationRepository,
+    private val notificationAttemptRepository: NotificationAttemptRepository,
     private val userRepository: UserRepository,
 ) : NotificationService {
 
@@ -81,9 +85,55 @@ class NotificationServiceImpl(
         notification.cancelNotification()
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     override fun getReservedNotifications(): List<Notification> {
-        //TODO status = RESERVED or status = PENDING and now <= retryAt
-        TODO("Not yet implemented")
+        val reservedNotifications =
+            notificationRepository.findAllWithPessimisticLockByReserved(LocalDateTime.now())
+
+        for (notification in reservedNotifications) {
+            notification.changeStatus(NotificationStatus.PENDING)
+        }
+
+        return reservedNotifications
+    }
+
+    @Transactional
+    override fun sendNotificationSuccess(
+        notificationId: Long
+    ) {
+        val notification = notificationRepository.findById(notificationId)
+            .orElseThrow { throw NotFoundException(NOTIFICATION_NOT_FOUND) }
+
+        notification.increaseAttemptCount()
+        notification.changeStatus(NotificationStatus.SENT)
+
+        createNotificationAttempt(notification, true)
+    }
+
+    @Transactional
+    override fun sendNotificationFailure(
+        notificationId: Long
+    ) {
+        val notification = notificationRepository.findById(notificationId)
+            .orElseThrow { throw NotFoundException(NOTIFICATION_NOT_FOUND) }
+
+        notification.handleNotificationFailure()
+
+        createNotificationAttempt(notification, false)
+    }
+
+    private fun createNotificationAttempt(
+        notification: Notification,
+        success: Boolean
+    ) {
+        val attemptNo = notification.attemptCount
+
+        val notificationAttemptResult =
+            if (success) NotificationAttemptResult.SUCCESS else NotificationAttemptResult.FAILURE
+
+        val notificationAttempt =
+            NotificationAttempt.create(notification.id!!, attemptNo, notificationAttemptResult)
+
+        notificationAttemptRepository.save(notificationAttempt)
     }
 }

@@ -23,4 +23,8 @@ interface NotificationService {
     fun cancelNotification(userId: Long, id: Long)
 
     fun getReservedNotifications() : List<Notification>
+
+    fun sendNotificationSuccess(notificationId: Long)
+
+    fun sendNotificationFailure(notificationId: Long)
 }

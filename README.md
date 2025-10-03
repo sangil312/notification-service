@@ -1,4 +1,6 @@
 # 알림 발송 서비스
+
+## 📋 API 스펙
 ### 💡알림 발송 예약 접수
 
 `POST http://localhost:8080/api/notifications`
@@ -14,7 +16,7 @@
 {
     "title": "test",
     "contents": "contents",
-    "reserveTime": "2025-09-30T18:00:00"
+    "reserveTime": "2025-10-03T18:00:00"
 }
 ```
 
@@ -39,24 +41,25 @@
 `GET http://localhost:8080/api/notifications`
 
 - Request Parameter
-`http://localhost:8080/api/notifications?page=0&size=10&status=pending`
+`http://localhost:8080/api/notifications?page=0&size=10&sort=reservedAt,asc&status=pending`
 
 |  파라미터  | 필수 |    설명    |
 |:------:|:---|:--------:|
 |  page  | X  |  페이지 번호  |
 |  size  | X  |  페이지 크기  |
+|  sort  | X  |  정렬 컬럼   |
 | status | X  | 알림 접수 상태 |
 
 - Response `200 OK` <br>
-  (Pageable 관련 응답은 생략)
+  (Pageable 관련 응답 설명 생략)
 
 ```json
 {
     "content": [
         {
             "notificationId": 10,
-            "status": "PENDING",
-            "retryCount": 1,
+            "status": "RESERVED",
+            "attemptCount": 1,
             "title": "알림 제목10",
             "reservedTime": "2025-10-04T15:15:15",
             "retryTime": "2025-10-04T15:15:16",
@@ -91,15 +94,15 @@
 }
 ```
 
-| 필드             |   타입    |        설명 |
-|:---------------|:-------:|----------:|
-| notificationId |  Long   |     알림 ID |
-| status         | String  |     알림 상태 |
-| retryCount        | Int | 발송 재시도 횟수 |
-| title   | String  |     알림 제목 |
-| reservedTime   | String  |    예약된 시간 |
-| retryTime   | String  |    재시도 시간 |
-| acceptTime   | String  |     접수 시간 |
+| 필드             |   타입    |       설명 |
+|:---------------|:-------:|---------:|
+| notificationId |  Long   |    알림 ID |
+| status         | String  |    알림 상태 |
+| attemptCount        | Int | 발송 시도 횟수 |
+| title   | String  |    알림 제목 |
+| reservedTime   | String  |   예약된 시간 |
+| retryTime   | String  |   재시도 시간 |
+| acceptTime   | String  |    접수 시간 |
 
 ---
 

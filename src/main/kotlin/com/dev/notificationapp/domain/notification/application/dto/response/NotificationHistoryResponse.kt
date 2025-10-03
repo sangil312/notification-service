@@ -5,7 +5,7 @@ import com.dev.notificationapp.domain.notification.Notification
 data class NotificationHistoryResponse(
     val notificationId: Long,
     val status: String,
-    val retryCount: Int,
+    val attemptCount: Int,
     val title: String,
     val reservedTime: String,
     val retryTime: String,
@@ -16,7 +16,7 @@ data class NotificationHistoryResponse(
             return NotificationHistoryResponse(
                 notificationId = notification.id!!,
                 status = notification.status.name,
-                retryCount = notification.retryCount,
+                attemptCount = notification.attemptCount,
                 title = notification.title,
                 reservedTime = notification.reservedAt.toString(),
                 retryTime = notification.retryAt.toString(),
