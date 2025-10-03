@@ -11,7 +11,8 @@ class NotificationAttempt(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    val notificationId: Long,
+    @ManyToOne(fetch = FetchType.LAZY)
+    val notification: Notification,
 
     val attemptNo: Int,
 
@@ -21,12 +22,12 @@ class NotificationAttempt(
 
     companion object {
         fun create(
-            notificationId: Long,
+            notification: Notification,
             attemptNo: Int,
             attemptResult: NotificationAttemptResult
         ) : NotificationAttempt {
             return NotificationAttempt(
-                notificationId = notificationId,
+                notification = notification,
                 attemptNo = attemptNo,
                 result = attemptResult
             )

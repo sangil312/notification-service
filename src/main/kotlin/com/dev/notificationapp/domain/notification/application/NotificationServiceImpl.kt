@@ -132,7 +132,7 @@ class NotificationServiceImpl(
             if (success) NotificationAttemptResult.SUCCESS else NotificationAttemptResult.FAILURE
 
         val notificationAttempt =
-            NotificationAttempt.create(notification.id!!, attemptNo, notificationAttemptResult)
+            NotificationAttempt.create(notification, attemptNo, notificationAttemptResult)
 
         notificationAttemptRepository.save(notificationAttempt)
     }

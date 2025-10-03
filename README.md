@@ -1,4 +1,6 @@
 # 알림 발송 서비스
+- **_도메인 모델.md_** 파일에 도메인 모델을 정의해놨습니다.
+---
 
 ## 📋 API 스펙
 ### 💡알림 발송 예약 접수
@@ -37,10 +39,10 @@
 
 ---
 
-### 💡알림 발송 에약 내역 조회
+### 💡알림 발송 예약 내역 조회
 `GET http://localhost:8080/api/notifications`
 
-- Request Parameter
+- Request Parameter <br>
 `http://localhost:8080/api/notifications?page=0&size=10&sort=reservedAt,asc&status=pending`
 
 |  파라미터  | 필수 |    설명    |
@@ -51,7 +53,6 @@
 | status | X  | 알림 접수 상태 |
 
 - Response `200 OK` <br>
-  (Pageable 관련 응답 설명 생략)
 
 ```json
 {
@@ -93,6 +94,7 @@
     "empty": false
 }
 ```
+(Pageable 관련 응답 설명 생략)
 
 | 필드             |   타입    |       설명 |
 |:---------------|:-------:|---------:|
