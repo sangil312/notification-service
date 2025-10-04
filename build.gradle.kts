@@ -50,6 +50,8 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("io.mockk:mockk:1.14.6")
+	testImplementation("com.ninja-squad:springmockk:4.0.2")
 
 	// Json 데이터 역직렬화
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

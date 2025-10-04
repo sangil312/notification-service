@@ -14,7 +14,7 @@ class NotificationSendScheduler(
     private val notificationSendService: NotificationSendService
 ) {
 
-    @Scheduled(fixedRate = 5_000L)
+    @Scheduled(fixedRate = 10_000L)
     fun sendNotifications() {
         log.info { "알림 발송 스케줄러 실행 - ${LocalDateTime.now()}" }
         val reservedNotifications = notificationService.getReservedNotifications()

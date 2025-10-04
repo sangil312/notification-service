@@ -63,8 +63,12 @@ class Notification(
         }
     }
 
+    fun changeStatus(status: NotificationStatus) {
+        this.status = status
+    }
+
     fun cancelNotification() {
-        status = NotificationStatus.CANCELED
+        changeStatus(NotificationStatus.CANCELED)
     }
 
     fun checkCancelableStatus() {
@@ -77,22 +81,18 @@ class Notification(
         }
     }
 
-    fun changeStatus(status: NotificationStatus) {
-        this.status = status
-    }
-
     fun increaseAttemptCount() {
         attemptCount ++
     }
 
     fun handleNotificationFailure() {
-        this.increaseAttemptCount()
+        increaseAttemptCount()
 
         if (attemptCount >= maxAttemptCount) {
-            status = NotificationStatus.FAILED
+            changeStatus(NotificationStatus.FAILED)
         } else {
             retryAt = retryAt.plusSeconds(10)
-            status = NotificationStatus.RESERVED
+            changeStatus(NotificationStatus.RESERVED)
         }
     }
 }

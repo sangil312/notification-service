@@ -19,7 +19,7 @@ class NotificationController(
         @RequestHeader("Idempotency-Key") idempotencyKey: String,
         @Valid @RequestBody request: ReservationRequest
     ) : ResponseEntity<ReservationResponse> {
-        // 토큰에서 userId를 추출했다고 가정
+        // 토큰 or 세션에서 userId를 추출했다고 가정
         return ResponseEntity.ok(
             notificationService.reserveNotification(1L, idempotencyKey, request.toServiceRequest()))
     }
@@ -29,7 +29,7 @@ class NotificationController(
         @RequestParam("status") status: String?,
         pageable: Pageable
         ) : ResponseEntity<Page<NotificationHistoryResponse>> {
-        // 토큰에서 userId를 추출했다고 가정
+        // 토큰 or 세션에서 userId를 추출했다고 가정
         return ResponseEntity.ok(notificationService.getNotifications(1L, status, pageable))
     }
 
@@ -37,7 +37,7 @@ class NotificationController(
     fun cancelNotification(
         @PathVariable("id") id: Long
     ) : ResponseEntity<Unit> {
-        // 토큰에서 userId를 추출했다고 가정
+        // 토큰 or 세션에서 userId를 추출했다고 가정
         notificationService.cancelNotification(1L, id)
         return ResponseEntity.ok().build()
     }
